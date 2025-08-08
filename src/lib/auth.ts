@@ -4,6 +4,12 @@ import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import * as schema from "@/db/schema";
 
 export const auth = betterAuth({
+  socialProviders: {
+    google: {
+      clientId: process.env.GOOGLE_CLIENT_ID as string,
+      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
+    },
+  },
   emailAndPassword: {
     enabled: true,
   },
@@ -22,6 +28,6 @@ export const auth = betterAuth({
     modelName: "accountTable",
   },
   verification: {
-    modelName: "verificationTokenTable",
+    modelName: "verificationTable",
   },
 });
