@@ -18,9 +18,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
+import { LoaderCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
 
 const formSchema = z
   .object({
@@ -37,6 +41,8 @@ const formSchema = z
 type FormValues = z.infer<typeof formSchema>;
 
 const SignUpForm = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -47,8 +53,30 @@ const SignUpForm = () => {
     },
   });
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
+  async function onSubmit(data: FormValues) {
+    setIsLoading(true);
+    await authClient.signUp.email({
+      name: data.name,
+      email: data.email,
+      password: data.password,
+
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+          setIsLoading(false);
+        },
+        onError: (error) => {
+          if (error.error.code === "USER_ALREADY_EXISTS") {
+            form.setError("email", {
+              message: "Email ja cadastrado",
+            });
+            setIsLoading(false);
+          }
+          alert(error.error.message);
+          setIsLoading(false);
+        },
+      },
+    });
   }
 
   return (
@@ -131,7 +159,13 @@ const SignUpForm = () => {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit">Criar conta</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <LoaderCircleIcon className="animate-spin" />
+                ) : (
+                  "Criar Conta"
+                )}
+              </Button>
             </CardFooter>
           </form>
         </Form>
