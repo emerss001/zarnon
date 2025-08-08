@@ -67,7 +67,7 @@ const SignUpForm = () => {
         },
         onError: (error) => {
           if (error.error.code === "USER_ALREADY_EXISTS") {
-            form.setError("email", {
+            return form.setError("email", {
               message: "Email ja cadastrado",
             });
             setIsLoading(false);

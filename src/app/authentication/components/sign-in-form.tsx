@@ -18,7 +18,11 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
+import { authClient } from "@/lib/auth-client";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LoaderCircleIcon } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 
@@ -30,6 +34,8 @@ const formSchema = z.object({
 type FormValues = z.infer<typeof formSchema>;
 
 const SignInForm = () => {
+  const router = useRouter();
+  const [isLoading, setIsLoading] = useState(false);
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -38,8 +44,32 @@ const SignInForm = () => {
     },
   });
 
-  function onSubmit(data: FormValues) {
-    console.log(data);
+  async function onSubmit(data: FormValues) {
+    setIsLoading(true);
+    await authClient.signIn.email({
+      email: data.email,
+      password: data.password,
+      fetchOptions: {
+        onSuccess: () => {
+          router.push("/");
+          setIsLoading(false);
+        },
+        onError: (ctx) => {
+          console.log(ctx.error.code);
+          if (ctx.error.code === "USER_NOT_FOUND") {
+            return form.setError("email", {
+              message: "Usuário não encontrado",
+            });
+          }
+          if (ctx.error.code === "INVALID_EMAIL_OR_PASSWORD") {
+            return form.setError("email", {
+              message: "Email ou senha inválidos",
+            });
+          }
+        },
+      },
+    });
+    setIsLoading(false);
   }
 
   return (
@@ -88,7 +118,13 @@ const SignInForm = () => {
               />
             </CardContent>
             <CardFooter>
-              <Button type="submit">Entrar</Button>
+              <Button type="submit" disabled={isLoading}>
+                {isLoading ? (
+                  <LoaderCircleIcon className="animate-spin" />
+                ) : (
+                  "Entrar"
+                )}
+              </Button>
             </CardFooter>
           </form>
         </Form>
