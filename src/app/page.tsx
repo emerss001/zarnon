@@ -1,11 +1,20 @@
 import CategorySelector from "@/components/category-selector";
+import Footer from "@/components/footer";
 import Header from "@/components/header";
 import ProductsList from "@/components/products-list";
 import { db } from "@/db";
+import { productTable } from "@/db/schema";
+import { desc } from "drizzle-orm";
 import Image from "next/image";
 
 const Home = async () => {
   const products = await db.query.productTable.findMany({
+    with: {
+      variants: true,
+    },
+  });
+  const newlyCreatedProducts = await db.query.productTable.findMany({
+    orderBy: [desc(productTable.createdAt)],
     with: {
       variants: true,
     },
@@ -43,6 +52,9 @@ const Home = async () => {
             alt={"banner - autêntico, leve e confortável"}
           />
         </div>
+
+        <ProductsList title="Novos produtos" products={newlyCreatedProducts} />
+        <Footer />
       </div>
     </>
   );
