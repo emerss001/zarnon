@@ -1,6 +1,7 @@
 import CategorySelector from "@/components/category-selector";
 import Footer from "@/components/footer";
 import Header from "@/components/header";
+import PartnersBrandsList from "@/components/partners-brands-list";
 import ProductsList from "@/components/products-list";
 import { db } from "@/db";
 import { productTable } from "@/db/schema";
@@ -34,6 +35,10 @@ const Home = async () => {
             className="h-auto w-full"
             alt={"banner - leve uma vida com estilo"}
           />
+        </div>
+
+        <div className="px-5">
+          <PartnersBrandsList />
         </div>
 
         <ProductsList title="Mais vendidos" products={products} />
